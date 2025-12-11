@@ -1,0 +1,2698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ULTIMATE IMPOSSIBLE PLATFORMER</title>
+    <style>
+        /* Original CSS styles remain exactly the same */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            touch-action: none;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background: #000;
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+            width: 100vw;
+            height: 100vh;
+            position: fixed;
+        }
+
+        #gameContainer {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        #gameCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        #uiLayer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        #welcomeScreen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, #000, #220000, #000);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 3;
+            padding: 20px;
+            text-align: center;
+            pointer-events: auto;
+        }
+
+        #welcomeScreen h1 {
+            font-size: 2.5rem;
+            color: #ff3300;
+            text-shadow: 0 0 10px #ff0000, 0 0 20px #ff3300;
+            margin-bottom: 20px;
+            animation: pulse 2s infinite;
+        }
+
+        #welcomeScreen p {
+            font-size: 1.2rem;
+            margin: 10px 0;
+            color: #ff9966;
+            max-width: 90%;
+        }
+
+        #welcomeScreen .warning {
+            color: #ff0000;
+            font-weight: bold;
+            font-size: 1.4rem;
+        }
+
+        #welcomeScreen .tip {
+            color: #33ccff;
+            font-style: italic;
+        }
+
+        #startButton {
+            margin-top: 30px;
+            padding: 15px 40px;
+            background: #ff3300;
+            color: #000;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            cursor: pointer;
+            pointer-events: auto;
+            box-shadow: 0 0 15px #ff3300;
+            transition: all 0.3s;
+        }
+
+        #startButton:hover {
+            background: #ff5500;
+            box-shadow: 0 0 25px #ff5500;
+            transform: scale(1.05);
+        }
+
+        #controls {
+            position: absolute;
+            bottom: 20px;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 20px;
+            z-index: 4;
+            pointer-events: none;
+            display: none;
+        }
+
+        .control-group {
+            display: flex;
+            gap: 20px;
+            pointer-events: none;
+        }
+
+        .control-btn {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2rem;
+            color: rgba(255, 255, 255, 0.8);
+            pointer-events: auto;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        #leaderboard {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            z-index: 5;
+            pointer-events: none;
+            display: none;
+        }
+
+        #levelInfo {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            border-radius: 10px;
+            font-size: 1rem;
+            z-index: 5;
+            pointer-events: none;
+            display: none;
+        }
+
+        #deathScreen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 0, 0, 0.3);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 6;
+            pointer-events: auto;
+            text-align: center;
+        }
+
+        #deathScreen h2 {
+            font-size: 3rem;
+            color: #ff0000;
+            text-shadow: 0 0 10px #ff0000;
+            margin-bottom: 20px;
+        }
+
+        #deathScreen p {
+            font-size: 1.5rem;
+            margin: 10px 0;
+            color: #ff9966;
+        }
+
+        #restartButton {
+            margin-top: 30px;
+            padding: 15px 40px;
+            background: #ff3300;
+            color: #000;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            cursor: pointer;
+            pointer-events: auto;
+            box-shadow: 0 0 15px #ff3300;
+        }
+
+        #victoryScreen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 255, 0, 0.2);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 6;
+            pointer-events: auto;
+            text-align: center;
+        }
+
+        #victoryScreen h2 {
+            font-size: 3rem;
+            color: #00ff00;
+            text-shadow: 0 0 10px #00ff00;
+            margin-bottom: 20px;
+        }
+
+        #victoryScreen p {
+            font-size: 1.5rem;
+            margin: 10px 0;
+            color: #99ff99;
+        }
+
+        #nextLevelButton {
+            margin-top: 30px;
+            padding: 15px 40px;
+            background: #00ff00;
+            color: #000;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            cursor: pointer;
+            pointer-events: auto;
+            box-shadow: 0 0 15px #00ff00;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.7; }
+            50% { opacity: 1; }
+            100% { opacity: 0.7; }
+        }
+
+        @keyframes shake {
+            0% { transform: translate(0, 0) rotate(0); }
+            10% { transform: translate(-5px, -5px) rotate(-1deg); }
+            20% { transform: translate(5px, 5px) rotate(1deg); }
+            30% { transform: translate(-5px, 5px) rotate(0); }
+            40% { transform: translate(5px, -5px) rotate(1deg); }
+            50% { transform: translate(-5px, -5px) rotate(-1deg); }
+            60% { transform: translate(5px, 5px) rotate(0); }
+            70% { transform: translate(-5px, 5px) rotate(-1deg); }
+            80% { transform: translate(5px, -5px) rotate(1deg); }
+            90% { transform: translate(-5px, -5px) rotate(0); }
+            100% { transform: translate(0, 0) rotate(0); }
+        }
+
+        @keyframes flash {
+            0% { background-color: transparent; }
+            50% { background-color: rgba(255, 0, 0, 0.5); }
+            100% { background-color: transparent; }
+        }
+
+        .shake {
+            animation: shake 0.5s ease-in-out;
+        }
+
+        .flash {
+            animation: flash 0.3s ease-in-out;
+        }
+
+        #orientationWarning {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            color: #fff;
+            z-index: 100;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+        }
+
+        /* NEW STYLES FOR SETTINGS AND ADDED FEATURES */
+        
+        #settingsButton {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 51, 0, 0.7);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5rem;
+            cursor: pointer;
+            z-index: 7;
+            pointer-events: auto;
+            box-shadow: 0 0 10px rgba(255, 51, 0, 0.5);
+        }
+
+        #settingsPanel {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 8;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            overflow-y: auto;
+            pointer-events: auto;
+        }
+
+        #settingsPanel h2 {
+            font-size: 2.5rem;
+            color: #ff3300;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .settings-section {
+            width: 90%;
+            max-width: 500px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .settings-section h3 {
+            color: #33ccff;
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 10px 0;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 5px;
+        }
+
+        .setting-label {
+            font-size: 1.2rem;
+            color: #ff9966;
+        }
+
+        .setting-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        select, input[type="range"] {
+            background: #333;
+            color: white;
+            border: 1px solid #ff3300;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+
+        input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+        }
+
+        #closeSettings {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            background: #ff3300;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2rem;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        #levelSelectPanel {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 8;
+            display: none;
+            flex-direction: column;
+            padding: 20px;
+            overflow-y: auto;
+            pointer-events: auto;
+        }
+
+        #levelSelectPanel h2 {
+            font-size: 2.5rem;
+            color: #ff3300;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        #levelGrid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 10px;
+            max-height: 70vh;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .level-button {
+            background: #333;
+            border: 2px solid #666;
+            border-radius: 10px;
+            padding: 15px 5px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 1.2rem;
+        }
+
+        .level-button:hover {
+            background: #ff3300;
+            transform: scale(1.05);
+        }
+
+        .level-button.completed {
+            border-color: #00ff00;
+            background: rgba(0, 255, 0, 0.1);
+        }
+
+        .level-button.current {
+            border-color: #33ccff;
+            background: rgba(51, 204, 255, 0.1);
+        }
+
+        #levelSearch {
+            width: 90%;
+            max-width: 500px;
+            padding: 10px;
+            margin: 10px auto;
+            background: #333;
+            color: white;
+            border: 2px solid #ff3300;
+            border-radius: 5px;
+            font-size: 1.2rem;
+        }
+
+        #enemyGallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .enemy-card {
+            background: rgba(255, 51, 0, 0.1);
+            border: 1px solid #ff3300;
+            border-radius: 10px;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .enemy-card img {
+            width: 100%;
+            height: 100px;
+            object-fit: contain;
+            margin-bottom: 10px;
+        }
+
+        #contactInfo {
+            text-align: center;
+            margin-top: 20px;
+            padding: 20px;
+            background: rgba(51, 204, 255, 0.1);
+            border-radius: 10px;
+            border: 1px solid #33ccff;
+        }
+
+        #contactInfo h3 {
+            color: #33ccff;
+            margin-bottom: 10px;
+        }
+
+        #contactInfo a {
+            color: #ff9966;
+            text-decoration: none;
+            font-size: 1.2rem;
+            word-break: break-all;
+        }
+
+        #contactInfo a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-aspect-ratio: 1/1) {
+            #orientationWarning {
+                display: flex;
+            }
+            
+            #settingsButton {
+                top: 10px;
+                right: 10px;
+                width: 40px;
+                height: 40px;
+                font-size: 1.2rem;
+            }
+            
+            .settings-section {
+                width: 95%;
+                padding: 15px;
+            }
+            
+            .setting-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 5px;
+            }
+            
+            .setting-control {
+                width: 100%;
+                justify-content: space-between;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="orientationWarning">
+        <h1>⚠️ ROTATE YOUR DEVICE ⚠️</h1>
+        <p>This game is designed for landscape mode.</p>
+        <p>Please rotate your device to play.</p>
+    </div>
+    
+    <div id="gameContainer">
+        <canvas id="gameCanvas"></canvas>
+        <div id="uiLayer">
+            <!-- Settings Button -->
+            <div id="settingsButton" title="Settings">⚙️</div>
+            
+            <div id="welcomeScreen">
+                <h1>🔥 WELCOME TO THE ULTIMATE IMPOSSIBLE PLATFORMER 🔥</h1>
+                <p class="warning">⚠️ WARNING: This is NOT for the faint-hearted.</p>
+                <p>Now with 300+ levels, multiple enemies, and customizable settings!</p>
+                <p class="warning">💀 Only the most daring players might survive.</p>
+                <p>99.99% of humans will fail.</p>
+                <p class="tip">👁️ PRO TIP: Customize your experience in settings!</p>
+                <p>Can you conquer the chaos? Or will you rage-quit instantly?</p>
+                <button id="startButton">BEGIN YOUR SUFFERING</button>
+                <button id="levelSelectButton" style="margin-top: 20px; padding: 10px 20px; background: #33ccff; color: #000; border: none; border-radius: 10px; font-size: 1.2rem; cursor: pointer; pointer-events: auto; box-shadow: 0 0 10px #33ccff;">LEVEL SELECT</button>
+            </div>
+            
+            <div id="levelInfo">Level: 1 | Deaths: 0</div>
+            <div id="leaderboard">
+                <h3>LEADERBOARD</h3>
+                <div id="scoresList">
+                    <div>1. CHAOS: 999</div>
+                    <div>2. RAGE: 750</div>
+                    <div>3. PAIN: 500</div>
+                    <div>4. FEAR: 250</div>
+                    <div>5. PLAYER: 99</div>
+                </div>
+            </div>
+            
+            <div id="deathScreen">
+                <h2>YOU DIED</h2>
+                <p id="deathMessage">Better luck next time... if there is one.</p>
+                <button id="restartButton">TRY AGAIN (FOOL)</button>
+            </div>
+            
+            <div id="victoryScreen">
+                <h2>LEVEL COMPLETE!</h2>
+                <p id="victoryMessage">You survived... for now.</p>
+                <button id="nextLevelButton">NEXT LEVEL</button>
+                <button id="levelSelectFromVictory" style="margin-top: 20px; padding: 10px 20px; background: #33ccff; color: #000; border: none; border-radius: 10px; font-size: 1.2rem; cursor: pointer; pointer-events: auto; box-shadow: 0 0 10px #33ccff;">LEVEL SELECT</button>
+            </div>
+            
+            <div id="controls">
+                <div class="control-group">
+                    <div class="control-btn" id="leftBtn">←</div>
+                    <div class="control-btn" id="rightBtn">→</div>
+                </div>
+                <div class="control-group">
+                    <div class="control-btn" id="jumpBtn">⬆</div>
+                    <div class="control-btn" id="dashBtn">⤐</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Panel -->
+    <div id="settingsPanel">
+        <div id="closeSettings">×</div>
+        <h2>GAME SETTINGS</h2>
+        
+        <div class="settings-section">
+            <h3>Gameplay</h3>
+            <div class="setting-item">
+                <span class="setting-label">Game Difficulty</span>
+                <div class="setting-control">
+                    <select id="difficultySetting">
+                        <option value="easy">Easy (For Beginners)</option>
+                        <option value="normal" selected>Normal (Standard Chaos)</option>
+                        <option value="hard">Hard (Pure Suffering)</option>
+                        <option value="impossible">Impossible (99.99% Fail)</option>
+                    </select>
+                </div>
+            </div>
+            <div class="setting-item">
+                <span class="setting-label">Player Speed</span>
+                <div class="setting-control">
+                    <input type="range" id="playerSpeedSetting" min="3" max="10" step="0.5" value="5">
+                    <span id="speedValue">5</span>
+                </div>
+            </div>
+            <div class="setting-item">
+                <span class="setting-label">Jump Power</span>
+                <div class="setting-control">
+                    <input type="range" id="jumpPowerSetting" min="8" max="20" step="0.5" value="12">
+                    <span id="jumpValue">12</span>
+                </div>
+            </div>
+            <div class="setting-item">
+                <span class="setting-label">Gravity Strength</span>
+                <div class="setting-control">
+                    <input type="range" id="gravitySetting" min="0.1" max="1.5" step="0.1" value="0.5">
+                    <span id="gravityValue">0.5</span>
+                </div>
+            </div>
+            <div class="setting-item">
+                <span class="setting-label">Chaos Mode Frequency</span>
+                <div class="setting-control">
+                    <input type="range" id="chaosFrequencySetting" min="0" max="100" step="5" value="10">
+                    <span id="chaosValue">10%</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="settings-section">
+            <h3>Visual Settings</h3>
+            <div class="setting-item">
+                <span class="setting-label">Screen Shake</span>
+                <div class="setting-control">
+                    <input type="checkbox" id="screenShakeSetting" checked>
+                </div>
+            </div>
+            <div class="setting-item">
+                <span class="setting-label">Player Trail</span>
+                <div class="setting-control">
+                    <input type="checkbox" id="playerTrailSetting" checked>
+                </div>
+            </div>
+            <div class="setting-item">
+                <span class="setting-label">Show Hitboxes</span>
+                <div class="setting-control">
+                    <input type="checkbox" id="hitboxSetting">
+                </div>
+            </div>
+            <div class="setting-item">
+                <span class="setting-label">Graphics Quality</span>
+                <div class="setting-control">
+                    <select id="graphicsQualitySetting">
+                        <option value="low">Low (Performance)</option>
+                        <option value="medium" selected>Medium (Balanced)</option>
+                        <option value="high">High (Visuals)</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        
+        <div class="settings-section">
+            <h3>Control Settings</h3>
+            <div class="setting-item">
+                <span class="setting-label">Touch Controls Size</span>
+                <div class="setting-control">
+                    <input type="range" id="controlSizeSetting" min="50" max="100" step="5" value="70">
+                    <span id="controlSizeValue">70px</span>
+                </div>
+            </div>
+            <div class="setting-item">
+                <span class="setting-label">Control Opacity</span>
+                <div class="setting-control">
+                    <input type="range" id="controlOpacitySetting" min="10" max="100" step="5" value="80">
+                    <span id="opacityValue">80%</span>
+                </div>
+            </div>
+            <div class="setting-item">
+                <span class="setting-label">Enable Keyboard</span>
+                <div class="setting-control">
+                    <input type="checkbox" id="keyboardControlSetting" checked>
+                </div>
+            </div>
+            <div class="setting-item">
+                <span class="setting-label">Vibration Feedback</span>
+                <div class="setting-control">
+                    <input type="checkbox" id="vibrationSetting" checked>
+                </div>
+            </div>
+        </div>
+        
+        <div class="settings-section">
+            <h3>Enemy Settings</h3>
+            <div class="setting-item">
+                <span class="setting-label">Enemy Types Enabled</span>
+                <div class="setting-control">
+                    <select id="enemyTypesSetting" multiple size="4">
+                        <option value="chaser" selected>Chaser Enemies</option>
+                        <option value="shooter" selected>Shooter Enemies</option>
+                        <option value="teleporter" selected>Teleporter Enemies</option>
+                        <option value="boss" selected>Boss Enemies</option>
+                    </select>
+                </div>
+            </div>
+            <div class="setting-item">
+                <span class="setting-label">Enemy Difficulty</span>
+                <div class="setting-control">
+                    <input type="range" id="enemyDifficultySetting" min="50" max="200" step="10" value="100">
+                    <span id="enemyDifficultyValue">100%</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="settings-section">
+            <h3>Audio Settings</h3>
+            <div class="setting-item">
+                <span class="setting-label">Master Volume</span>
+                <div class="setting-control">
+                    <input type="range" id="masterVolumeSetting" min="0" max="100" step="5" value="80">
+                    <span id="volumeValue">80%</span>
+                </div>
+            </div>
+            <div class="setting-item">
+                <span class="setting-label">Sound Effects</span>
+                <div class="setting-control">
+                    <input type="checkbox" id="soundEffectsSetting" checked>
+                </div>
+            </div>
+            <div class="setting-item">
+                <span class="setting-label">Background Music</span>
+                <div class="setting-control">
+                    <input type="checkbox" id="musicSetting" checked>
+                </div>
+            </div>
+        </div>
+        
+        <div id="contactInfo">
+            <h3>Contact & Support</h3>
+            <p>For inquiries, feedback, or support:</p>
+            <a href="mailto:Vishwakarmanetra378@gmail.com">Vishwakarmanetra378@gmail.com</a>
+            <p style="margin-top: 10px; font-size: 0.9rem; color: #ff9966;">Game created with chaos and rage</p>
+        </div>
+        
+        <div style="margin-top: 20px; display: flex; gap: 20px;">
+            <button id="saveSettings" style="padding: 10px 30px; background: #00ff00; color: #000; border: none; border-radius: 10px; font-size: 1.2rem; cursor: pointer;">SAVE</button>
+            <button id="resetSettings" style="padding: 10px 30px; background: #ff3300; color: #000; border: none; border-radius: 10px; font-size: 1.2rem; cursor: pointer;">RESET TO DEFAULT</button>
+            <button id="exportSettings" style="padding: 10px 30px; background: #33ccff; color: #000; border: none; border-radius: 10px; font-size: 1.2rem; cursor: pointer;">EXPORT SETTINGS</button>
+        </div>
+    </div>
+    
+    <!-- Level Select Panel -->
+    <div id="levelSelectPanel">
+        <h2>SELECT LEVEL (1-300)</h2>
+        <input type="text" id="levelSearch" placeholder="Search levels by number or difficulty...">
+        <div id="levelGrid">
+            <!-- Level buttons will be generated here -->
+        </div>
+        <div style="margin-top: 20px; text-align: center;">
+            <button id="closeLevelSelect" style="padding: 10px 30px; background: #ff3300; color: #000; border: none; border-radius: 10px; font-size: 1.2rem; cursor: pointer;">CLOSE</button>
+        </div>
+    </div>
+
+    <script>
+        // =================== ENHANCED GAME CODE ===================
+        // Original game variables remain
+        let canvas, ctx;
+        let gameState = "welcome";
+        let currentLevel = 1;
+        let playerDeaths = 0;
+        let player = {
+            x: 50,
+            y: 300,
+            width: 30,
+            height: 50,
+            velocityX: 0,
+            velocityY: 0,
+            speed: 5,
+            jumpPower: 12,
+            isJumping: false,
+            isDashing: false,
+            dashCooldown: 0,
+            color: "#33ccff",
+            trail: []
+        };
+        
+        let gravity = 0.5;
+        let friction = 0.8;
+        let levels = [];
+        let currentLevelData = [];
+        let traps = [];
+        let platforms = [];
+        let checkpoints = [];
+        let enemies = [];
+        let goal = {};
+        let camera = { x: 0, y: 0 };
+        let screenShake = 0;
+        let screenRotation = 0;
+        let controlsFlipped = false;
+        let gravityFlipped = false;
+        let lastDeathTime = 0;
+        let leaderboard = [];
+        let levelWidth = 3000;
+        let levelHeight = 800;
+        let chaosMode = false;
+        let chaosTimer = 0;
+        
+        // NEW VARIABLES FOR ENHANCED FEATURES
+        let gameSettings = {
+            difficulty: 'normal',
+            playerSpeed: 5,
+            jumpPower: 12,
+            gravity: 0.5,
+            chaosFrequency: 10,
+            screenShake: true,
+            playerTrail: true,
+            showHitboxes: false,
+            graphicsQuality: 'medium',
+            controlSize: 70,
+            controlOpacity: 80,
+            keyboardControls: true,
+            vibration: true,
+            enabledEnemies: ['chaser', 'shooter', 'teleporter', 'boss'],
+            enemyDifficulty: 100,
+            masterVolume: 80,
+            soundEffects: true,
+            music: true
+        };
+        
+        let completedLevels = [];
+        let enemyTypes = {
+            chaser: { name: "Chaser", color: "#ff0000", speed: 2, behavior: "chase", size: 30 },
+            shooter: { name: "Shooter", color: "#ff9900", speed: 0, behavior: "shoot", size: 35 },
+            teleporter: { name: "Teleporter", color: "#9900ff", speed: 1, behavior: "teleport", size: 30 },
+            boss: { name: "Boss", color: "#ff0066", speed: 1.5, behavior: "boss", size: 50 },
+            jumper: { name: "Jumper", color: "#00cc00", speed: 1, behavior: "jump", size: 30 },
+            guardian: { name: "Guardian", color: "#00aaff", speed: 0, behavior: "guard", size: 40 },
+            phantom: { name: "Phantom", color: "#cc00cc", speed: 2.5, behavior: "phase", size: 25 },
+            turret: { name: "Turret", color: "#aaaaaa", speed: 0, behavior: "turret", size: 40 }
+        };
+        
+        let enemyAttacks = [];
+        
+        // Death messages array remains
+        const deathMessages = [
+            "Better luck next time... if there is one.",
+            "Did you really think you could make it?",
+            "That was pathetic. Try harder.",
+            "Your suffering amuses me.",
+            "Another soul crushed by the impossible.",
+            "Your reflexes are too slow, human.",
+            "Maybe platformers aren't for you.",
+            "Did you rage yet? You will.",
+            "This is only level " + currentLevel + ". Imagine what's next.",
+            "Your patience will break before this game does.",
+            "HAHAHAHAHAHAHAHAHAHAHAHA",
+            "RAGE QUIT?",
+            "GIT GUD",
+            "UNINSTALL NOW",
+            "EVEN GRANDMA IS BETTER"
+        ];
+        
+        // Initialize the game
+        function init() {
+            canvas = document.getElementById('gameCanvas');
+            ctx = canvas.getContext('2d');
+            
+            // Set canvas size
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
+            
+            // Initialize controls
+            initControls();
+            
+            // Initialize settings
+            initSettings();
+            
+            // Generate 300+ levels
+            generateLevels();
+            
+            // Generate level select grid
+            generateLevelGrid();
+            
+            // Load saved data
+            loadGameData();
+            
+            // Load leaderboard
+            loadLeaderboard();
+            
+            // Start game loop
+            requestAnimationFrame(gameLoop);
+        }
+        
+        // Initialize settings panel
+        function initSettings() {
+            const settingsButton = document.getElementById('settingsButton');
+            const closeSettings = document.getElementById('closeSettings');
+            const saveSettings = document.getElementById('saveSettings');
+            const resetSettings = document.getElementById('resetSettings');
+            const exportSettings = document.getElementById('exportSettings');
+            const levelSelectButton = document.getElementById('levelSelectButton');
+            const levelSelectFromVictory = document.getElementById('levelSelectFromVictory');
+            const closeLevelSelect = document.getElementById('closeLevelSelect');
+            const levelSearch = document.getElementById('levelSearch');
+            
+            // Settings button
+            settingsButton.addEventListener('click', () => {
+                document.getElementById('settingsPanel').style.display = 'flex';
+                updateSettingsDisplay();
+            });
+            
+            closeSettings.addEventListener('click', () => {
+                document.getElementById('settingsPanel').style.display = 'none';
+            });
+            
+            // Level select buttons
+            levelSelectButton.addEventListener('click', () => {
+                document.getElementById('levelSelectPanel').style.display = 'flex';
+            });
+            
+            levelSelectFromVictory.addEventListener('click', () => {
+                document.getElementById('victoryScreen').style.display = 'none';
+                document.getElementById('levelSelectPanel').style.display = 'flex';
+            });
+            
+            closeLevelSelect.addEventListener('click', () => {
+                document.getElementById('levelSelectPanel').style.display = 'none';
+            });
+            
+            // Level search
+            levelSearch.addEventListener('input', filterLevels);
+            
+            // Settings controls
+            document.getElementById('playerSpeedSetting').addEventListener('input', function() {
+                document.getElementById('speedValue').textContent = this.value;
+            });
+            
+            document.getElementById('jumpPowerSetting').addEventListener('input', function() {
+                document.getElementById('jumpValue').textContent = this.value;
+            });
+            
+            document.getElementById('gravitySetting').addEventListener('input', function() {
+                document.getElementById('gravityValue').textContent = this.value;
+            });
+            
+            document.getElementById('chaosFrequencySetting').addEventListener('input', function() {
+                document.getElementById('chaosValue').textContent = this.value + '%';
+            });
+            
+            document.getElementById('controlSizeSetting').addEventListener('input', function() {
+                document.getElementById('controlSizeValue').textContent = this.value + 'px';
+            });
+            
+            document.getElementById('controlOpacitySetting').addEventListener('input', function() {
+                document.getElementById('opacityValue').textContent = this.value + '%';
+            });
+            
+            document.getElementById('enemyDifficultySetting').addEventListener('input', function() {
+                document.getElementById('enemyDifficultyValue').textContent = this.value + '%';
+            });
+            
+            document.getElementById('masterVolumeSetting').addEventListener('input', function() {
+                document.getElementById('volumeValue').textContent = this.value + '%';
+            });
+            
+            // Save settings
+            saveSettings.addEventListener('click', saveGameSettings);
+            
+            // Reset settings
+            resetSettings.addEventListener('click', resetGameSettings);
+            
+            // Export settings
+            exportSettings.addEventListener('click', exportSettingsData);
+            
+            // Load saved settings
+            loadGameSettings();
+        }
+        
+        // Update settings display with current values
+        function updateSettingsDisplay() {
+            document.getElementById('difficultySetting').value = gameSettings.difficulty;
+            document.getElementById('playerSpeedSetting').value = gameSettings.playerSpeed;
+            document.getElementById('jumpPowerSetting').value = gameSettings.jumpPower;
+            document.getElementById('gravitySetting').value = gameSettings.gravity;
+            document.getElementById('chaosFrequencySetting').value = gameSettings.chaosFrequency;
+            document.getElementById('screenShakeSetting').checked = gameSettings.screenShake;
+            document.getElementById('playerTrailSetting').checked = gameSettings.playerTrail;
+            document.getElementById('hitboxSetting').checked = gameSettings.showHitboxes;
+            document.getElementById('graphicsQualitySetting').value = gameSettings.graphicsQuality;
+            document.getElementById('controlSizeSetting').value = gameSettings.controlSize;
+            document.getElementById('controlOpacitySetting').value = gameSettings.controlOpacity;
+            document.getElementById('keyboardControlSetting').checked = gameSettings.keyboardControls;
+            document.getElementById('vibrationSetting').checked = gameSettings.vibration;
+            document.getElementById('enemyDifficultySetting').value = gameSettings.enemyDifficulty;
+            document.getElementById('masterVolumeSetting').value = gameSettings.masterVolume;
+            document.getElementById('soundEffectsSetting').checked = gameSettings.soundEffects;
+            document.getElementById('musicSetting').checked = gameSettings.music;
+            
+            // Update display values
+            document.getElementById('speedValue').textContent = gameSettings.playerSpeed;
+            document.getElementById('jumpValue').textContent = gameSettings.jumpPower;
+            document.getElementById('gravityValue').textContent = gameSettings.gravity;
+            document.getElementById('chaosValue').textContent = gameSettings.chaosFrequency + '%';
+            document.getElementById('controlSizeValue').textContent = gameSettings.controlSize + 'px';
+            document.getElementById('opacityValue').textContent = gameSettings.controlOpacity + '%';
+            document.getElementById('enemyDifficultyValue').textContent = gameSettings.enemyDifficulty + '%';
+            document.getElementById('volumeValue').textContent = gameSettings.masterVolume + '%';
+            
+            // Update enemy types selection
+            const enemySelect = document.getElementById('enemyTypesSetting');
+            Array.from(enemySelect.options).forEach(option => {
+                option.selected = gameSettings.enabledEnemies.includes(option.value);
+            });
+            
+            // Apply control size and opacity
+            applyControlSettings();
+        }
+        
+        // Save game settings
+        function saveGameSettings() {
+            gameSettings.difficulty = document.getElementById('difficultySetting').value;
+            gameSettings.playerSpeed = parseFloat(document.getElementById('playerSpeedSetting').value);
+            gameSettings.jumpPower = parseFloat(document.getElementById('jumpPowerSetting').value);
+            gameSettings.gravity = parseFloat(document.getElementById('gravitySetting').value);
+            gameSettings.chaosFrequency = parseInt(document.getElementById('chaosFrequencySetting').value);
+            gameSettings.screenShake = document.getElementById('screenShakeSetting').checked;
+            gameSettings.playerTrail = document.getElementById('playerTrailSetting').checked;
+            gameSettings.showHitboxes = document.getElementById('hitboxSetting').checked;
+            gameSettings.graphicsQuality = document.getElementById('graphicsQualitySetting').value;
+            gameSettings.controlSize = parseInt(document.getElementById('controlSizeSetting').value);
+            gameSettings.controlOpacity = parseInt(document.getElementById('controlOpacitySetting').value);
+            gameSettings.keyboardControls = document.getElementById('keyboardControlSetting').checked;
+            gameSettings.vibration = document.getElementById('vibrationSetting').checked;
+            gameSettings.enemyDifficulty = parseInt(document.getElementById('enemyDifficultySetting').value);
+            gameSettings.masterVolume = parseInt(document.getElementById('masterVolumeSetting').value);
+            gameSettings.soundEffects = document.getElementById('soundEffectsSetting').checked;
+            gameSettings.music = document.getElementById('musicSetting').checked;
+            
+            // Get selected enemy types
+            const enemySelect = document.getElementById('enemyTypesSetting');
+            gameSettings.enabledEnemies = Array.from(enemySelect.selectedOptions).map(option => option.value);
+            
+            // Apply settings to game
+            applyGameSettings();
+            
+            // Save to localStorage
+            localStorage.setItem('impossiblePlatformerSettings', JSON.stringify(gameSettings));
+            
+            // Close settings panel
+            document.getElementById('settingsPanel').style.display = 'none';
+            
+            // Show confirmation
+            alert("Settings saved successfully!");
+        }
+        
+        // Apply game settings to current game
+        function applyGameSettings() {
+            player.speed = gameSettings.playerSpeed;
+            player.jumpPower = gameSettings.jumpPower;
+            gravity = gameSettings.gravity;
+            
+            // Apply control settings
+            applyControlSettings();
+        }
+        
+        // Apply control size and opacity settings
+        function applyControlSettings() {
+            const controlButtons = document.querySelectorAll('.control-btn');
+            controlButtons.forEach(btn => {
+                btn.style.width = gameSettings.controlSize + 'px';
+                btn.style.height = gameSettings.controlSize + 'px';
+                btn.style.opacity = gameSettings.controlOpacity / 100;
+                btn.style.fontSize = (gameSettings.controlSize * 0.4) + 'px';
+            });
+        }
+        
+        // Reset game settings to defaults
+        function resetGameSettings() {
+            if (confirm("Reset all settings to default values?")) {
+                gameSettings = {
+                    difficulty: 'normal',
+                    playerSpeed: 5,
+                    jumpPower: 12,
+                    gravity: 0.5,
+                    chaosFrequency: 10,
+                    screenShake: true,
+                    playerTrail: true,
+                    showHitboxes: false,
+                    graphicsQuality: 'medium',
+                    controlSize: 70,
+                    controlOpacity: 80,
+                    keyboardControls: true,
+                    vibration: true,
+                    enabledEnemies: ['chaser', 'shooter', 'teleporter', 'boss'],
+                    enemyDifficulty: 100,
+                    masterVolume: 80,
+                    soundEffects: true,
+                    music: true
+                };
+                
+                updateSettingsDisplay();
+                applyGameSettings();
+            }
+        }
+        
+        // Export settings data
+        function exportSettingsData() {
+            const settingsData = {
+                gameSettings: gameSettings,
+                completedLevels: completedLevels,
+                playerDeaths: playerDeaths,
+                currentLevel: currentLevel
+            };
+            
+            const dataStr = JSON.stringify(settingsData, null, 2);
+            const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+            
+            const exportFileDefaultName = 'impossible-platformer-settings.json';
+            
+            const linkElement = document.createElement('a');
+            linkElement.setAttribute('href', dataUri);
+            linkElement.setAttribute('download', exportFileDefaultName);
+            linkElement.click();
+            
+            alert("Settings exported successfully!");
+        }
+        
+        // Load game settings from localStorage
+        function loadGameSettings() {
+            const saved = localStorage.getItem('impossiblePlatformerSettings');
+            if (saved) {
+                try {
+                    const loaded = JSON.parse(saved);
+                    gameSettings = { ...gameSettings, ...loaded };
+                    applyGameSettings();
+                } catch (e) {
+                    console.error("Error loading settings:", e);
+                }
+            }
+        }
+        
+        // Load game data
+        function loadGameData() {
+            const saved = localStorage.getItem('impossiblePlatformerGameData');
+            if (saved) {
+                try {
+                    const data = JSON.parse(saved);
+                    completedLevels = data.completedLevels || [];
+                    playerDeaths = data.playerDeaths || 0;
+                    currentLevel = data.currentLevel || 1;
+                } catch (e) {
+                    console.error("Error loading game data:", e);
+                }
+            }
+        }
+        
+        // Save game data
+        function saveGameData() {
+            const data = {
+                completedLevels: completedLevels,
+                playerDeaths: playerDeaths,
+                currentLevel: currentLevel
+            };
+            localStorage.setItem('impossiblePlatformerGameData', JSON.stringify(data));
+        }
+        
+        // Generate level select grid
+        function generateLevelGrid() {
+            const levelGrid = document.getElementById('levelGrid');
+            levelGrid.innerHTML = '';
+            
+            for (let i = 1; i <= 300; i++) {
+                const levelButton = document.createElement('div');
+                levelButton.className = 'level-button';
+                levelButton.textContent = i;
+                levelButton.title = `Level ${i}`;
+                
+                if (completedLevels.includes(i)) {
+                    levelButton.classList.add('completed');
+                    levelButton.title += ' (Completed)';
+                }
+                
+                if (i === currentLevel) {
+                    levelButton.classList.add('current');
+                    levelButton.title += ' (Current)';
+                }
+                
+                levelButton.addEventListener('click', () => {
+                    currentLevel = i;
+                    loadLevel(currentLevel);
+                    document.getElementById('levelSelectPanel').style.display = 'none';
+                    if (gameState === 'welcome') {
+                        startGame();
+                    }
+                });
+                
+                levelGrid.appendChild(levelButton);
+            }
+        }
+        
+        // Filter levels in level select
+        function filterLevels() {
+            const searchTerm = document.getElementById('levelSearch').value.toLowerCase();
+            const levelButtons = document.querySelectorAll('.level-button');
+            
+            levelButtons.forEach(button => {
+                const levelNum = parseInt(button.textContent);
+                const isCompleted = completedLevels.includes(levelNum);
+                const isCurrent = levelNum === currentLevel;
+                
+                let matches = false;
+                
+                // Search by number
+                if (button.textContent.includes(searchTerm)) {
+                    matches = true;
+                }
+                // Search by status
+                else if (searchTerm === 'completed' && isCompleted) {
+                    matches = true;
+                }
+                else if (searchTerm === 'current' && isCurrent) {
+                    matches = true;
+                }
+                // Search by difficulty ranges
+                else if (searchTerm === 'easy' && levelNum <= 100) {
+                    matches = true;
+                }
+                else if (searchTerm === 'medium' && levelNum > 100 && levelNum <= 200) {
+                    matches = true;
+                }
+                else if (searchTerm === 'hard' && levelNum > 200 && levelNum <= 300) {
+                    matches = true;
+                }
+                
+                button.style.display = matches ? 'block' : 'none';
+            });
+        }
+        
+        // Resize canvas to fit screen
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        
+        // Initialize touch controls (modified for settings)
+        function initControls() {
+            const leftBtn = document.getElementById('leftBtn');
+            const rightBtn = document.getElementById('rightBtn');
+            const jumpBtn = document.getElementById('jumpBtn');
+            const dashBtn = document.getElementById('dashBtn');
+            const startButton = document.getElementById('startButton');
+            const restartButton = document.getElementById('restartButton');
+            const nextLevelButton = document.getElementById('nextLevelButton');
+            
+            // Touch events for mobile controls
+            leftBtn.addEventListener('touchstart', () => movePlayer(-1));
+            leftBtn.addEventListener('touchend', () => movePlayer(0));
+            
+            rightBtn.addEventListener('touchstart', () => movePlayer(1));
+            rightBtn.addEventListener('touchend', () => movePlayer(0));
+            
+            jumpBtn.addEventListener('touchstart', jump);
+            dashBtn.addEventListener('touchstart', dash);
+            
+            // Mouse events for testing on desktop
+            leftBtn.addEventListener('mousedown', () => movePlayer(-1));
+            leftBtn.addEventListener('mouseup', () => movePlayer(0));
+            leftBtn.addEventListener('mouseleave', () => movePlayer(0));
+            
+            rightBtn.addEventListener('mousedown', () => movePlayer(1));
+            rightBtn.addEventListener('mouseup', () => movePlayer(0));
+            rightBtn.addEventListener('mouseleave', () => movePlayer(0));
+            
+            jumpBtn.addEventListener('mousedown', jump);
+            dashBtn.addEventListener('mousedown', dash);
+            
+            // Game state buttons
+            startButton.addEventListener('click', startGame);
+            restartButton.addEventListener('click', restartLevel);
+            nextLevelButton.addEventListener('click', nextLevel);
+            
+            // Keyboard controls (conditional based on settings)
+            document.addEventListener('keydown', (e) => {
+                if (!gameSettings.keyboardControls || gameState !== 'playing') return;
+                
+                switch(e.key) {
+                    case 'ArrowLeft':
+                    case 'a':
+                        movePlayer(-1);
+                        break;
+                    case 'ArrowRight':
+                    case 'd':
+                        movePlayer(1);
+                        break;
+                    case 'ArrowUp':
+                    case 'w':
+                    case ' ':
+                        jump();
+                        break;
+                    case 'Shift':
+                    case 'Control':
+                        dash();
+                        break;
+                }
+            });
+            
+            document.addEventListener('keyup', (e) => {
+                if (!gameSettings.keyboardControls || gameState !== 'playing') return;
+                
+                if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'ArrowRight' || e.key === 'd') {
+                    movePlayer(0);
+                }
+            });
+        }
+        
+        // Move player left/right
+        function movePlayer(direction) {
+            if (gameState !== 'playing') return;
+            
+            // Apply control flip if active
+            if (controlsFlipped) {
+                direction = -direction;
+            }
+            
+            player.velocityX = direction * player.speed;
+            
+            // Micro randomization for extra chaos
+            if (Math.random() < 0.05) {
+                player.velocityX += (Math.random() - 0.5) * 0.5;
+            }
+        }
+        
+        // Make player jump
+        function jump() {
+            if (gameState !== 'playing' || player.isJumping) return;
+            
+            // Apply gravity flip if active
+            const jumpDirection = gravityFlipped ? -1 : 1;
+            
+            player.velocityY = -player.jumpPower * jumpDirection;
+            player.isJumping = true;
+            
+            // Micro randomization for extra chaos
+            if (Math.random() < 0.1) {
+                player.velocityY += (Math.random() - 0.5) * 2;
+            }
+            
+            // Play jump sound
+            playSound('jump');
+            
+            // Vibration feedback
+            if (gameSettings.vibration && 'vibrate' in navigator) {
+                navigator.vibrate(50);
+            }
+        }
+        
+        // Make player dash
+        function dash() {
+            if (gameState !== 'playing' || player.isDashing || player.dashCooldown > 0) return;
+            
+            player.isDashing = true;
+            player.dashCooldown = 60; // 1 second cooldown at 60fps
+            
+            // Apply a burst of speed
+            const dashMultiplier = 3;
+            player.velocityX *= dashMultiplier;
+            
+            // Add trail effect (if enabled)
+            if (gameSettings.playerTrail) {
+                for (let i = 0; i < 5; i++) {
+                    player.trail.push({
+                        x: player.x,
+                        y: player.y,
+                        width: player.width,
+                        height: player.height,
+                        alpha: 1 - i * 0.2
+                    });
+                }
+            }
+            
+            // Play dash sound
+            playSound('dash');
+            
+            // Vibration feedback
+            if (gameSettings.vibration && 'vibrate' in navigator) {
+                navigator.vibrate(100);
+            }
+            
+            // Reset dash after short time
+            setTimeout(() => {
+                player.isDashing = false;
+            }, 200);
+        }
+        
+        // Start the game
+        function startGame() {
+            gameState = "playing";
+            document.getElementById('welcomeScreen').style.display = 'none';
+            
+            // Show game UI elements
+            document.getElementById('levelInfo').style.display = 'block';
+            document.getElementById('leaderboard').style.display = 'block';
+            document.getElementById('controls').style.display = 'flex';
+            document.getElementById('settingsButton').style.display = 'flex';
+            
+            loadLevel(currentLevel);
+        }
+        
+        // Restart current level
+        function restartLevel() {
+            gameState = "playing";
+            document.getElementById('deathScreen').style.display = 'none';
+            loadLevel(currentLevel);
+        }
+        
+        // Advance to next level
+        function nextLevel() {
+            gameState = "playing";
+            document.getElementById('victoryScreen').style.display = 'none';
+            
+            // Mark current level as completed
+            if (!completedLevels.includes(currentLevel)) {
+                completedLevels.push(currentLevel);
+                saveGameData();
+            }
+            
+            currentLevel++;
+            loadLevel(currentLevel);
+        }
+        
+        // Generate 300+ levels with increasing difficulty
+        function generateLevels() {
+            // Generate first 300 levels
+            for (let i = 1; i <= 300; i++) {
+                levels[i] = generateRandomLevel(i);
+            }
+            
+            // Generate bonus levels
+            for (let i = 301; i <= 320; i++) {
+                levels[i] = generateBonusLevel(i);
+            }
+        }
+        
+        // Generate a random level with increasing difficulty
+        function generateRandomLevel(levelNum) {
+            const difficulty = Math.min(1 + (levelNum - 1) * 0.01, 3);
+            const platformCount = Math.floor(5 + levelNum * 0.3);
+            const trapCount = Math.floor(3 + levelNum * 0.2);
+            const checkpointCount = Math.max(1, Math.floor(3 - levelNum * 0.01));
+            
+            // Determine enemy count based on level
+            let enemyCount = 0;
+            if (levelNum > 10) enemyCount = Math.floor((levelNum - 10) * 0.1);
+            if (levelNum > 50) enemyCount = Math.floor(4 + (levelNum - 50) * 0.05);
+            if (levelNum > 100) enemyCount = Math.floor(6 + (levelNum - 100) * 0.03);
+            enemyCount = Math.min(enemyCount, 15);
+            
+            // Get enabled enemy types
+            const availableEnemyTypes = Object.keys(enemyTypes).filter(type => 
+                gameSettings.enabledEnemies.includes(type)
+            );
+            
+            const level = {
+                platforms: [],
+                traps: [],
+                checkpoints: [],
+                enemies: [],
+                attacks: [],
+                goal: { x: 800 + levelNum * 10, y: 350, width: 50, height: 50 },
+                chaosFactor: Math.min(0.1 + levelNum * 0.005, 0.5),
+                difficulty: difficulty,
+                levelNum: levelNum
+            };
+            
+            // Generate platforms
+            for (let i = 0; i < platformCount; i++) {
+                const isMoving = Math.random() < (0.1 + levelNum * 0.005);
+                const isFake = Math.random() < (0.05 + levelNum * 0.002);
+                const isFragile = levelNum > 50 && Math.random() < 0.1;
+                const isBouncy = levelNum > 30 && Math.random() < 0.1;
+                
+                level.platforms.push({
+                    x: i * 120 + Math.random() * 80,
+                    y: 300 + Math.random() * 200,
+                    width: 60 + Math.random() * 80,
+                    height: 20,
+                    color: isFake ? "#ff3300" : isFragile ? "#ff9900" : isBouncy ? "#33ccff" : "#666",
+                    moving: isMoving,
+                    moveRange: isMoving ? 30 + Math.random() * 120 : 0,
+                    moveSpeed: isMoving ? 0.5 + Math.random() * 2 : 0,
+                    isFake: isFake,
+                    isFragile: isFragile,
+                    isBouncy: isBouncy,
+                    bouncePower: isBouncy ? 15 : 0
+                });
+            }
+            
+            // Generate traps
+            const trapTypes = ["spike", "fakeFloor", "gravityFlip", "controlFlip", "screenFlip", "laser", "crusher"];
+            for (let i = 0; i < trapCount; i++) {
+                const trapType = trapTypes[Math.floor(Math.random() * trapTypes.length)];
+                const isInvisible = trapType === "spike" && Math.random() < 0.3;
+                
+                level.traps.push({
+                    x: 100 + i * 180 + Math.random() * 120,
+                    y: 350 + Math.random() * 150,
+                    width: trapType === "spike" ? 30 : 50,
+                    height: trapType === "spike" ? 20 : 50,
+                    type: trapType,
+                    invisible: isInvisible,
+                    active: true,
+                    timer: trapType === "laser" ? Math.random() * 100 : 0,
+                    interval: trapType === "laser" ? 100 + Math.random() * 200 : 0
+                });
+            }
+            
+            // Generate checkpoints (some will be fake)
+            for (let i = 0; i < checkpointCount; i++) {
+                level.checkpoints.push({
+                    x: 200 + i * 250 + Math.random() * 150,
+                    y: 250 + Math.random() * 150,
+                    width: 30,
+                    height: 50,
+                    active: Math.random() < (0.8 - levelNum * 0.002) // Decreasing chance of real checkpoints
+                });
+            }
+            
+            // Generate enemies (only if enabled enemy types available)
+            if (availableEnemyTypes.length > 0) {
+                for (let i = 0; i < enemyCount; i++) {
+                    const enemyType = availableEnemyTypes[Math.floor(Math.random() * availableEnemyTypes.length)];
+                    const enemyData = enemyTypes[enemyType];
+                    
+                    const enemy = {
+                        x: 200 + i * 200 + Math.random() * 150,
+                        y: 300 + Math.random() * 100,
+                        width: enemyData.size,
+                        height: enemyData.size,
+                        color: enemyData.color,
+                        type: enemyType,
+                        behavior: enemyData.behavior,
+                        speed: enemyData.speed * (gameSettings.enemyDifficulty / 100),
+                        health: enemyType === "boss" ? 5 : 1,
+                        attackCooldown: 0,
+                        teleportCooldown: 0,
+                        phaseCooldown: 0,
+                        direction: Math.random() > 0.5 ? 1 : -1
+                    };
+                    
+                    level.enemies.push(enemy);
+                }
+            }
+            
+            return level;
+        }
+        
+        // Generate bonus levels
+        function generateBonusLevel(levelNum) {
+            const level = {
+                platforms: [],
+                traps: [],
+                checkpoints: [],
+                enemies: [],
+                attacks: [],
+                goal: { x: 1500, y: 350, width: 50, height: 50 },
+                chaosFactor: 0.7,
+                difficulty: 4,
+                levelNum: levelNum,
+                isBonus: true
+            };
+            
+            // Create unique layouts for bonus levels
+            if (levelNum === 301) {
+                // Maze level
+                for (let i = 0; i < 20; i++) {
+                    for (let j = 0; j < 10; j++) {
+                        if (Math.random() > 0.3) {
+                            level.platforms.push({
+                                x: i * 80,
+                                y: j * 80,
+                                width: 80,
+                                height: 20,
+                                color: "#666"
+                            });
+                        }
+                    }
+                }
+            } else if (levelNum === 302) {
+                // Moving platform challenge
+                for (let i = 0; i < 15; i++) {
+                    level.platforms.push({
+                        x: i * 100,
+                        y: 300 + Math.sin(i) * 100,
+                        width: 80,
+                        height: 20,
+                        color: "#33ccff",
+                        moving: true,
+                        moveRange: 200,
+                        moveSpeed: 1 + i * 0.1
+                    });
+                }
+            } else {
+                // Random bonus level
+                for (let i = 0; i < 30; i++) {
+                    level.platforms.push({
+                        x: i * 60 + Math.random() * 40,
+                        y: 200 + Math.random() * 300,
+                        width: 40 + Math.random() * 60,
+                        height: 20,
+                        color: "#" + Math.floor(Math.random()*16777215).toString(16),
+                        moving: Math.random() > 0.5,
+                        moveRange: Math.random() * 200,
+                        moveSpeed: Math.random() * 3
+                    });
+                }
+            }
+            
+            // Add lots of enemies in bonus levels
+            const availableEnemyTypes = Object.keys(enemyTypes);
+            for (let i = 0; i < 20; i++) {
+                const enemyType = availableEnemyTypes[Math.floor(Math.random() * availableEnemyTypes.length)];
+                const enemyData = enemyTypes[enemyType];
+                
+                level.enemies.push({
+                    x: 100 + i * 70,
+                    y: 100 + Math.random() * 400,
+                    width: enemyData.size,
+                    height: enemyData.size,
+                    color: enemyData.color,
+                    type: enemyType,
+                    behavior: enemyData.behavior,
+                    speed: enemyData.speed * 1.5,
+                    health: enemyType === "boss" ? 10 : 2
+                });
+            }
+            
+            return level;
+        }
+        
+        // Load a specific level
+        function loadLevel(levelNum) {
+            if (!levels[levelNum]) {
+                // If no more levels, show victory screen
+                showVictoryScreen(true);
+                return;
+            }
+            
+            currentLevelData = levels[levelNum];
+            platforms = [...currentLevelData.platforms];
+            traps = [...currentLevelData.traps];
+            checkpoints = [...currentLevelData.checkpoints];
+            enemies = [...currentLevelData.enemies];
+            enemyAttacks = [];
+            goal = {...currentLevelData.goal};
+            
+            // Adjust level size based on content
+            levelWidth = Math.max(1500, goal.x + 500);
+            levelHeight = 800;
+            
+            // Reset player position
+            player.x = 50;
+            player.y = 300;
+            player.velocityX = 0;
+            player.velocityY = 0;
+            player.isJumping = false;
+            player.isDashing = false;
+            player.dashCooldown = 0;
+            player.trail = [];
+            
+            // Reset chaos effects
+            controlsFlipped = false;
+            gravityFlipped = false;
+            screenRotation = 0;
+            chaosMode = false;
+            chaosTimer = 0;
+            
+            // Update UI
+            document.getElementById('levelInfo').textContent = `Level: ${levelNum} | Deaths: ${playerDeaths}`;
+            
+            // Update level grid
+            generateLevelGrid();
+        }
+        
+        // Main game loop
+        function gameLoop() {
+            update();
+            render();
+            requestAnimationFrame(gameLoop);
+        }
+        
+        // Update game state
+        function update() {
+            if (gameState !== "playing") return;
+            
+            // Update dash cooldown
+            if (player.dashCooldown > 0) {
+                player.dashCooldown--;
+            }
+            
+            // Apply gravity (with possible flip)
+            const gravityDirection = gravityFlipped ? -gravity : gravity;
+            player.velocityY += gravityDirection;
+            
+            // Apply friction to X velocity
+            player.velocityX *= friction;
+            
+            // Update player position
+            player.x += player.velocityX;
+            player.y += player.velocityY;
+            
+            // Update trail (if enabled)
+            if (gameSettings.playerTrail) {
+                for (let i = player.trail.length - 1; i >= 0; i--) {
+                    player.trail[i].alpha -= 0.05;
+                    if (player.trail[i].alpha <= 0) {
+                        player.trail.splice(i, 1);
+                    }
+                }
+            }
+            
+            // Update moving platforms
+            updateMovingPlatforms();
+            
+            // Update enemies and their attacks
+            updateEnemies();
+            updateEnemyAttacks();
+            
+            // Check collisions
+            checkPlatformCollisions();
+            checkTrapCollisions();
+            checkCheckpointCollisions();
+            checkEnemyCollisions();
+            checkGoalCollision();
+            checkAttackCollisions();
+            
+            // Apply chaos effects randomly
+            applyChaosEffects();
+            
+            // Update camera to follow player
+            updateCamera();
+            
+            // Update UI
+            document.getElementById('levelInfo').textContent = `Level: ${currentLevel} | Deaths: ${playerDeaths}`;
+        }
+        
+        // Update moving platforms
+        function updateMovingPlatforms() {
+            for (let platform of platforms) {
+                if (platform.moving) {
+                    // Sine wave movement
+                    const time = Date.now() / 1000;
+                    platform.x += Math.sin(time * platform.moveSpeed) * 0.5;
+                }
+            }
+        }
+        
+        // Update enemies with different behaviors
+        function updateEnemies() {
+            for (let enemy of enemies) {
+                // Update cooldowns
+                if (enemy.attackCooldown > 0) enemy.attackCooldown--;
+                if (enemy.teleportCooldown > 0) enemy.teleportCooldown--;
+                if (enemy.phaseCooldown > 0) enemy.phaseCooldown--;
+                
+                // Different behaviors based on enemy type
+                switch(enemy.behavior) {
+                    case "chase":
+                        // Chase player
+                        const dx = player.x - enemy.x;
+                        const dy = player.y - enemy.y;
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+                        
+                        if (distance < 400) {
+                            enemy.x += (dx / distance) * enemy.speed;
+                            enemy.y += (dy / distance) * enemy.speed * 0.5;
+                        } else {
+                            // Wander randomly
+                            enemy.x += enemy.direction * enemy.speed * 0.5;
+                            if (enemy.x < 100 || enemy.x > levelWidth - 100) {
+                                enemy.direction *= -1;
+                            }
+                        }
+                        break;
+                        
+                    case "shoot":
+                        // Shoot at player
+                        if (enemy.attackCooldown <= 0) {
+                            const dx = player.x - enemy.x;
+                            const dy = player.y - enemy.y;
+                            const distance = Math.sqrt(dx * dx + dy * dy);
+                            
+                            if (distance < 500) {
+                                // Create projectile
+                                enemyAttacks.push({
+                                    x: enemy.x + enemy.width/2,
+                                    y: enemy.y + enemy.height/2,
+                                    width: 10,
+                                    height: 10,
+                                    velocityX: (dx / distance) * 8,
+                                    velocityY: (dy / distance) * 8,
+                                    color: enemy.color,
+                                    damage: 1
+                                });
+                                
+                                enemy.attackCooldown = 60 + Math.random() * 60;
+                            }
+                        }
+                        break;
+                        
+                    case "teleport":
+                        // Teleport around
+                        if (enemy.teleportCooldown <= 0) {
+                            if (Math.random() < 0.01) {
+                                enemy.x = 100 + Math.random() * (levelWidth - 200);
+                                enemy.y = 100 + Math.random() * (levelHeight - 200);
+                                enemy.teleportCooldown = 120;
+                            }
+                        }
+                        // Move randomly
+                        enemy.x += enemy.direction * enemy.speed;
+                        if (enemy.x < 100 || enemy.x > levelWidth - 100) {
+                            enemy.direction *= -1;
+                        }
+                        break;
+                        
+                    case "boss":
+                        // Boss behavior - combines multiple behaviors
+                        if (enemy.health > 0) {
+                            // Move towards player
+                            const dx = player.x - enemy.x;
+                            const dy = player.y - enemy.y;
+                            const distance = Math.sqrt(dx * dx + dy * dy);
+                            
+                            if (distance < 600) {
+                                enemy.x += (dx / distance) * enemy.speed * 0.7;
+                                enemy.y += (dy / distance) * enemy.speed * 0.7;
+                                
+                                // Attack patterns
+                                if (enemy.attackCooldown <= 0) {
+                                    // Shoot multiple projectiles
+                                    for (let i = 0; i < 8; i++) {
+                                        const angle = (i / 8) * Math.PI * 2;
+                                        enemyAttacks.push({
+                                            x: enemy.x + enemy.width/2,
+                                            y: enemy.y + enemy.height/2,
+                                            width: 15,
+                                            height: 15,
+                                            velocityX: Math.cos(angle) * 6,
+                                            velocityY: Math.sin(angle) * 6,
+                                            color: enemy.color,
+                                            damage: 2
+                                        });
+                                    }
+                                    enemy.attackCooldown = 120;
+                                }
+                            }
+                        }
+                        break;
+                        
+                    case "jump":
+                        // Jumping enemy
+                        enemy.x += enemy.direction * enemy.speed;
+                        
+                        // Jump occasionally
+                        if (Math.random() < 0.01 && enemy.velocityY === 0) {
+                            enemy.velocityY = -10;
+                        }
+                        
+                        // Apply gravity
+                        enemy.velocityY += gravity;
+                        enemy.y += enemy.velocityY;
+                        
+                        // Reverse direction at edges
+                        if (enemy.x < 100 || enemy.x > levelWidth - 100) {
+                            enemy.direction *= -1;
+                        }
+                        break;
+                        
+                    default:
+                        // Default wandering behavior
+                        enemy.x += enemy.direction * enemy.speed;
+                        if (enemy.x < 100 || enemy.x > levelWidth - 100) {
+                            enemy.direction *= -1;
+                        }
+                        break;
+                }
+                
+                // Apply gravity to enemies that need it
+                if (enemy.behavior === "jump") {
+                    // Simple ground collision for jumping enemies
+                    if (enemy.y > levelHeight - 100) {
+                        enemy.y = levelHeight - 100;
+                        enemy.velocityY = 0;
+                    }
+                }
+            }
+        }
+        
+        // Update enemy attacks/projectiles
+        function updateEnemyAttacks() {
+            for (let i = enemyAttacks.length - 1; i >= 0; i--) {
+                const attack = enemyAttacks[i];
+                
+                // Update position
+                attack.x += attack.velocityX;
+                attack.y += attack.velocityY;
+                
+                // Remove if out of bounds
+                if (attack.x < -100 || attack.x > levelWidth + 100 || 
+                    attack.y < -100 || attack.y > levelHeight + 100) {
+                    enemyAttacks.splice(i, 1);
+                }
+            }
+        }
+        
+        // Check collisions with platforms (enhanced for fragile/bouncy platforms)
+        function checkPlatformCollisions() {
+            player.isJumping = true;
+            
+            for (let i = platforms.length - 1; i >= 0; i--) {
+                const platform = platforms[i];
+                
+                // Check if player is colliding with platform
+                if (player.x < platform.x + platform.width &&
+                    player.x + player.width > platform.x &&
+                    player.y + player.height > platform.y &&
+                    player.y < platform.y + platform.height) {
+                    
+                    // If it's a fake platform, remove it
+                    if (platform.isFake) {
+                        platforms.splice(i, 1);
+                        continue;
+                    }
+                    
+                    // If it's a fragile platform, break it
+                    if (platform.isFragile) {
+                        platforms.splice(i, 1);
+                        continue;
+                    }
+                    
+                    // Check if player is landing on platform from above
+                    if (player.velocityY > 0 && player.y + player.height - player.velocityY <= platform.y) {
+                        player.y = platform.y - player.height;
+                        player.velocityY = platform.isBouncy ? -platform.bouncePower : 0;
+                        player.isJumping = platform.isBouncy;
+                    }
+                    // Check if player hits platform from below
+                    else if (player.velocityY < 0 && player.y - player.velocityY >= platform.y + platform.height) {
+                        player.y = platform.y + platform.height;
+                        player.velocityY = 0;
+                    }
+                    // Check if player hits platform from the side
+                    else if (player.velocityX > 0 && player.x + player.width - player.velocityX <= platform.x) {
+                        player.x = platform.x - player.width;
+                        player.velocityX = 0;
+                    }
+                    else if (player.velocityX < 0 && player.x - player.velocityX >= platform.x + platform.width) {
+                        player.x = platform.x + platform.width;
+                        player.velocityX = 0;
+                    }
+                }
+            }
+            
+            // Check if player falls out of the world
+            if (player.y > levelHeight + 200) {
+                killPlayer();
+            }
+        }
+        
+        // Check collisions with traps (enhanced)
+        function checkTrapCollisions() {
+            for (let i = traps.length - 1; i >= 0; i--) {
+                const trap = traps[i];
+                
+                // Update trap timers
+                if (trap.type === "laser" && trap.interval > 0) {
+                    trap.timer++;
+                    if (trap.timer >= trap.interval) {
+                        trap.active = !trap.active;
+                        trap.timer = 0;
+                    }
+                }
+                
+                if (!trap.active && trap.type === "laser") continue;
+                if (trap.invisible) continue;
+                
+                if (player.x < trap.x + trap.width &&
+                    player.x + player.width > trap.x &&
+                    player.y + player.height > trap.y &&
+                    player.y < trap.y + trap.height) {
+                    
+                    // Different trap types
+                    if (trap.type === "spike" || trap.type === "laser" || trap.type === "crusher") {
+                        killPlayer();
+                        return;
+                    } else if (trap.type === "fakeFloor") {
+                        // Remove the fake floor
+                        const index = platforms.findIndex(p => 
+                            p.x === trap.x && p.y === trap.y && p.width === trap.width && p.height === trap.height);
+                        if (index !== -1) {
+                            platforms.splice(index, 1);
+                        }
+                        // Also remove the trap
+                        traps.splice(i, 1);
+                    } else if (trap.type === "gravityFlip") {
+                        gravityFlipped = !gravityFlipped;
+                        traps.splice(i, 1);
+                    } else if (trap.type === "controlFlip") {
+                        controlsFlipped = !controlsFlipped;
+                        traps.splice(i, 1);
+                    } else if (trap.type === "screenFlip") {
+                        screenRotation = 180;
+                        traps.splice(i, 1);
+                    }
+                }
+            }
+        }
+        
+        // Check collisions with checkpoints
+        function checkCheckpointCollisions() {
+            for (let checkpoint of checkpoints) {
+                if (player.x < checkpoint.x + checkpoint.width &&
+                    player.x + player.width > checkpoint.x &&
+                    player.y + player.height > checkpoint.y &&
+                    player.y < checkpoint.y + checkpoint.height) {
+                    
+                    if (checkpoint.active) {
+                        // Real checkpoint - save progress
+                        playSound('checkpoint');
+                    } else {
+                        // Fake checkpoint - trigger trap
+                        killPlayer();
+                        return;
+                    }
+                    
+                    // Remove checkpoint after collision
+                    checkpoints.splice(checkpoints.indexOf(checkpoint), 1);
+                }
+            }
+        }
+        
+        // Check collisions with enemies
+        function checkEnemyCollisions() {
+            for (let enemy of enemies) {
+                if (player.x < enemy.x + enemy.width &&
+                    player.x + player.width > enemy.x &&
+                    player.y + player.height > enemy.y &&
+                    player.y < enemy.y + enemy.height) {
+                    
+                    // Boss enemies require multiple hits
+                    if (enemy.type === "boss" && enemy.health > 1) {
+                        enemy.health--;
+                        
+                        // Flash effect
+                        const originalColor = enemy.color;
+                        enemy.color = "#ffffff";
+                        setTimeout(() => {
+                            enemy.color = originalColor;
+                        }, 100);
+                        
+                        // Knockback player
+                        const dx = player.x - enemy.x;
+                        const dy = player.y - enemy.y;
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+                        
+                        if (distance > 0) {
+                            player.velocityX = (dx / distance) * 10;
+                            player.velocityY = (dy / distance) * 10 - 5;
+                        }
+                    } else {
+                        killPlayer();
+                        return;
+                    }
+                }
+            }
+        }
+        
+        // Check collisions with enemy attacks
+        function checkAttackCollisions() {
+            for (let attack of enemyAttacks) {
+                if (player.x < attack.x + attack.width &&
+                    player.x + player.width > attack.x &&
+                    player.y + player.height > attack.y &&
+                    player.y < attack.y + attack.height) {
+                    
+                    killPlayer();
+                    return;
+                }
+            }
+        }
+        
+        // Check if player reached the goal
+        function checkGoalCollision() {
+            if (player.x < goal.x + goal.width &&
+                player.x + player.width > goal.x &&
+                player.y + player.height > goal.y &&
+                player.y < goal.y + goal.height) {
+                
+                showVictoryScreen();
+            }
+        }
+        
+        // Apply random chaos effects (adjusted by settings)
+        function applyChaosEffects() {
+            // Apply chaos based on settings frequency
+            const chaosChance = gameSettings.chaosFrequency / 10000;
+            
+            if (Math.random() < chaosChance + currentLevelData.chaosFactor / 100) {
+                const effect = Math.floor(Math.random() * 6);
+                
+                switch(effect) {
+                    case 0:
+                        // Screen shake (if enabled)
+                        if (gameSettings.screenShake) {
+                            screenShake = 30;
+                        }
+                        break;
+                    case 1:
+                        // Control flip
+                        controlsFlipped = !controlsFlipped;
+                        break;
+                    case 2:
+                        // Gravity flip
+                        gravityFlipped = !gravityFlipped;
+                        break;
+                    case 3:
+                        // Screen rotation
+                        screenRotation = Math.random() * 20 - 10;
+                        break;
+                    case 4:
+                        // Chaos mode - multiple effects at once
+                        chaosMode = true;
+                        chaosTimer = 300; // 5 seconds at 60fps
+                        break;
+                    case 5:
+                        // Micro randomization of physics
+                        gravity += (Math.random() - 0.5) * 0.1;
+                        player.speed += (Math.random() - 0.5) * 0.5;
+                        break;
+                }
+            }
+            
+            // Handle chaos mode
+            if (chaosMode) {
+                if (chaosTimer > 0) {
+                    chaosTimer--;
+                    
+                    // Apply multiple chaotic effects
+                    if (Math.random() < 0.1 && gameSettings.screenShake) {
+                        screenShake = 10;
+                    }
+                    if (Math.random() < 0.05) {
+                        controlsFlipped = !controlsFlipped;
+                    }
+                    if (Math.random() < 0.05) {
+                        gravityFlipped = !gravityFlipped;
+                    }
+                    if (Math.random() < 0.02) {
+                        screenRotation = Math.random() * 360;
+                    }
+                } else {
+                    chaosMode = false;
+                }
+            }
+            
+            // Gradually reduce screen shake
+            if (screenShake > 0) {
+                screenShake--;
+            }
+            
+            // Gradually reduce screen rotation
+            if (screenRotation !== 0 && !chaosMode) {
+                screenRotation *= 0.95;
+                if (Math.abs(screenRotation) < 0.1) {
+                    screenRotation = 0;
+                }
+            }
+        }
+        
+        // Update camera position to follow player
+        function updateCamera() {
+            // Simple camera that follows the player with some delay
+            camera.x = player.x - canvas.width / 2 + player.width / 2;
+            camera.y = player.y - canvas.height / 2 + player.height / 2;
+            
+            // Keep camera within level bounds
+            camera.x = Math.max(0, Math.min(camera.x, levelWidth - canvas.width));
+            camera.y = Math.max(0, Math.min(camera.y, levelHeight - canvas.height));
+        }
+        
+        // Kill the player
+        function killPlayer() {
+            gameState = "dead";
+            playerDeaths++;
+            
+            // Save game data
+            saveGameData();
+            
+            // Visual effects (if enabled)
+            if (gameSettings.screenShake) {
+                screenShake = 30;
+            }
+            
+            document.body.classList.add('flash');
+            setTimeout(() => document.body.classList.remove('flash'), 300);
+            
+            // Audio
+            playSound('death');
+            
+            // Vibration feedback (if enabled)
+            if (gameSettings.vibration && 'vibrate' in navigator) {
+                navigator.vibrate([100, 50, 100]);
+            }
+            
+            // Show death screen after a short delay
+            setTimeout(() => {
+                const deathMessage = deathMessages[Math.floor(Math.random() * deathMessages.length)];
+                document.getElementById('deathMessage').textContent = deathMessage;
+                document.getElementById('deathScreen').style.display = 'flex';
+            }, 500);
+            
+            // Update leaderboard
+            updateLeaderboard();
+        }
+        
+        // Show victory screen
+        function showVictoryScreen(final = false) {
+            gameState = "victory";
+            
+            // Mark level as completed
+            if (!completedLevels.includes(currentLevel)) {
+                completedLevels.push(currentLevel);
+                saveGameData();
+            }
+            
+            if (final) {
+                document.getElementById('victoryMessage').textContent = "CONGRATULATIONS! You've completed all 300+ levels! (This should be statistically impossible)";
+                document.getElementById('nextLevelButton').style.display = 'none';
+            } else {
+                document.getElementById('victoryMessage').textContent = `You survived Level ${currentLevel}. The next one will be worse.`;
+                document.getElementById('nextLevelButton').style.display = 'block';
+            }
+            
+            // Play victory sound
+            playSound('victory');
+            
+            // Show victory screen after a short delay
+            setTimeout(() => {
+                document.getElementById('victoryScreen').style.display = 'flex';
+            }, 500);
+            
+            // Update leaderboard
+            updateLeaderboard();
+            
+            // Update level grid
+            generateLevelGrid();
+        }
+        
+        // Render the game (enhanced with graphics settings)
+        function render() {
+            // Clear canvas based on graphics quality
+            if (gameSettings.graphicsQuality === 'high') {
+                // High quality gradient background
+                const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+                gradient.addColorStop(0, '#110000');
+                gradient.addColorStop(0.5, '#220011');
+                gradient.addColorStop(1, '#000022');
+                ctx.fillStyle = gradient;
+            } else {
+                // Simple background
+                ctx.fillStyle = '#000';
+            }
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Apply screen effects
+            if (gameSettings.screenShake && screenShake > 0) {
+                ctx.save();
+                ctx.translate(
+                    Math.random() * screenShake - screenShake / 2,
+                    Math.random() * screenShake - screenShake / 2
+                );
+            }
+            
+            if (screenRotation !== 0) {
+                ctx.save();
+                ctx.translate(canvas.width / 2, canvas.height / 2);
+                ctx.rotate(screenRotation * Math.PI / 180);
+                ctx.translate(-canvas.width / 2, -canvas.height / 2);
+            }
+            
+            // Apply camera transformation
+            ctx.save();
+            ctx.translate(-camera.x, -camera.y);
+            
+            // Draw background
+            drawBackground();
+            
+            // Draw platforms
+            for (let platform of platforms) {
+                ctx.fillStyle = platform.color;
+                ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
+                
+                // Add visual details based on graphics quality
+                if (gameSettings.graphicsQuality !== 'low') {
+                    ctx.strokeStyle = platform.isFake ? '#ff3300' : platform.isFragile ? '#ff9900' : platform.isBouncy ? '#33ccff' : '#888';
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(platform.x, platform.y, platform.width, platform.height);
+                    
+                    // Add pattern for fake platforms
+                    if (platform.isFake) {
+                        ctx.setLineDash([5, 5]);
+                        ctx.strokeRect(platform.x, platform.y, platform.width, platform.height);
+                        ctx.setLineDash([]);
+                    }
+                    
+                    // Add cracks for fragile platforms
+                    if (platform.isFragile) {
+                        ctx.strokeStyle = '#ff3300';
+                        ctx.beginPath();
+                        for (let i = 0; i < 3; i++) {
+                            const x1 = platform.x + Math.random() * platform.width;
+                            const y1 = platform.y + Math.random() * platform.height;
+                            const x2 = x1 + (Math.random() - 0.5) * 20;
+                            const y2 = y1 + (Math.random() - 0.5) * 10;
+                            ctx.moveTo(x1, y1);
+                            ctx.lineTo(x2, y2);
+                        }
+                        ctx.stroke();
+                    }
+                }
+            }
+            
+            // Draw traps
+            for (let trap of traps) {
+                if (trap.invisible) continue;
+                if (trap.type === "laser" && !trap.active) continue;
+                
+                ctx.fillStyle = 
+                    trap.type === "spike" ? "#ff0000" :
+                    trap.type === "fakeFloor" ? "#666" :
+                    trap.type === "gravityFlip" ? "#aa00ff" :
+                    trap.type === "controlFlip" ? "#ff00aa" :
+                    trap.type === "screenFlip" ? "#ffff00" :
+                    trap.type === "laser" ? "#00ffff" :
+                    trap.type === "crusher" ? "#ff6600" : "#ff0000";
+                
+                if (trap.type === "spike") {
+                    ctx.beginPath();
+                    ctx.moveTo(trap.x, trap.y + trap.height);
+                    ctx.lineTo(trap.x + trap.width / 2, trap.y);
+                    ctx.lineTo(trap.x + trap.width, trap.y + trap.height);
+                    ctx.closePath();
+                    ctx.fill();
+                } else if (trap.type === "laser") {
+                    // Draw laser beam
+                    ctx.globalAlpha = trap.active ? 0.7 : 0.2;
+                    ctx.fillRect(trap.x, trap.y, trap.width, trap.height);
+                    ctx.globalAlpha = 1;
+                    
+                    if (trap.active) {
+                        // Add glow effect for laser
+                        ctx.shadowColor = '#00ffff';
+                        ctx.shadowBlur = 10;
+                        ctx.fillRect(trap.x, trap.y, trap.width, trap.height);
+                        ctx.shadowBlur = 0;
+                    }
+                } else {
+                    ctx.fillRect(trap.x, trap.y, trap.width, trap.height);
+                    
+                    // Add symbol based on trap type
+                    if (gameSettings.graphicsQuality !== 'low') {
+                        ctx.fillStyle = '#fff';
+                        ctx.font = '20px Arial';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        
+                        if (trap.type === "gravityFlip") {
+                            ctx.fillText('G', trap.x + trap.width / 2, trap.y + trap.height / 2);
+                        } else if (trap.type === "controlFlip") {
+                            ctx.fillText('C', trap.x + trap.width / 2, trap.y + trap.height / 2);
+                        } else if (trap.type === "screenFlip") {
+                            ctx.fillText('S', trap.x + trap.width / 2, trap.y + trap.height / 2);
+                        } else if (trap.type === "crusher") {
+                            ctx.fillText('X', trap.x + trap.width / 2, trap.y + trap.height / 2);
+                        }
+                    }
+                }
+            }
+            
+            // Draw checkpoints
+            for (let checkpoint of checkpoints) {
+                ctx.fillStyle = checkpoint.active ? '#00ff00' : '#ff3300';
+                ctx.fillRect(checkpoint.x, checkpoint.y, checkpoint.width, checkpoint.height);
+                
+                // Add flag pole
+                ctx.fillStyle = '#fff';
+                ctx.fillRect(checkpoint.x + checkpoint.width / 2 - 2, checkpoint.y, 4, -30);
+                
+                // Add flag
+                ctx.fillStyle = checkpoint.active ? '#00ff00' : '#ff3300';
+                ctx.beginPath();
+                ctx.moveTo(checkpoint.x + checkpoint.width / 2, checkpoint.y - 30);
+                ctx.lineTo(checkpoint.x + checkpoint.width / 2 - 15, checkpoint.y - 20);
+                ctx.lineTo(checkpoint.x + checkpoint.width / 2, checkpoint.y - 10);
+                ctx.closePath();
+                ctx.fill();
+            }
+            
+            // Draw enemy attacks
+            for (let attack of enemyAttacks) {
+                ctx.fillStyle = attack.color;
+                ctx.beginPath();
+                ctx.arc(attack.x, attack.y, attack.width / 2, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Add glow for high quality
+                if (gameSettings.graphicsQuality === 'high') {
+                    ctx.shadowColor = attack.color;
+                    ctx.shadowBlur = 5;
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+                }
+            }
+            
+            // Draw enemies
+            for (let enemy of enemies) {
+                ctx.fillStyle = enemy.color;
+                
+                // Different shapes for different enemies
+                if (enemy.type === "boss") {
+                    // Boss enemy with crown
+                    ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
+                    
+                    // Crown for boss
+                    ctx.fillStyle = '#ffcc00';
+                    ctx.beginPath();
+                    ctx.moveTo(enemy.x + enemy.width/2, enemy.y - 10);
+                    ctx.lineTo(enemy.x + enemy.width/4, enemy.y + 10);
+                    ctx.lineTo(enemy.x + enemy.width/2, enemy.y);
+                    ctx.lineTo(enemy.x + enemy.width*3/4, enemy.y + 10);
+                    ctx.closePath();
+                    ctx.fill();
+                } else if (enemy.type === "turret") {
+                    // Turret shape
+                    ctx.beginPath();
+                    ctx.arc(enemy.x + enemy.width/2, enemy.y + enemy.height/2, enemy.width/2, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Turret barrel
+                    ctx.fillStyle = '#333';
+                    ctx.fillRect(enemy.x + enemy.width/2 - 5, enemy.y, 10, -15);
+                } else {
+                    // Standard enemy
+                    ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
+                }
+                
+                // Add eyes for high quality
+                if (gameSettings.graphicsQuality !== 'low') {
+                    ctx.fillStyle = '#fff';
+                    ctx.fillRect(enemy.x + 5, enemy.y + 5, 5, 5);
+                    ctx.fillRect(enemy.x + enemy.width - 10, enemy.y + 5, 5, 5);
+                    
+                    // Health bar for boss
+                    if (enemy.type === "boss" && enemy.health < 5) {
+                        ctx.fillStyle = '#ff0000';
+                        ctx.fillRect(enemy.x, enemy.y - 10, enemy.width, 5);
+                        
+                        ctx.fillStyle = '#00ff00';
+                        ctx.fillRect(enemy.x, enemy.y - 10, enemy.width * (enemy.health / 5), 5);
+                    }
+                }
+                
+                // Show hitboxes if enabled
+                if (gameSettings.showHitboxes) {
+                    ctx.strokeStyle = '#00ff00';
+                    ctx.lineWidth = 1;
+                    ctx.strokeRect(enemy.x, enemy.y, enemy.width, enemy.height);
+                }
+            }
+            
+            // Draw goal
+            ctx.fillStyle = '#00ff00';
+            ctx.fillRect(goal.x, goal.y, goal.width, goal.height);
+            
+            // Add goal details
+            ctx.fillStyle = '#fff';
+            ctx.font = '20px Arial';
+            ctx.fillText('GOAL', goal.x + 5, goal.y + 30);
+            
+            // Draw player trail (if enabled)
+            if (gameSettings.playerTrail) {
+                for (let trail of player.trail) {
+                    ctx.globalAlpha = trail.alpha;
+                    ctx.fillStyle = player.color;
+                    ctx.fillRect(trail.x, trail.y, trail.width, trail.height);
+                }
+                ctx.globalAlpha = 1;
+            }
+            
+            // Draw player
+            ctx.fillStyle = player.color;
+            ctx.fillRect(player.x, player.y, player.width, player.height);
+            
+            // Add player details
+            ctx.fillStyle = '#fff';
+            ctx.fillRect(player.x + 5, player.y + 10, 5, 5); // Left eye
+            ctx.fillRect(player.x + player.width - 10, player.y + 10, 5, 5); // Right eye
+            
+            // Show hitboxes if enabled
+            if (gameSettings.showHitboxes) {
+                ctx.strokeStyle = '#ff0000';
+                ctx.lineWidth = 1;
+                ctx.strokeRect(player.x, player.y, player.width, player.height);
+            }
+            
+            // Restore camera transformation
+            ctx.restore();
+            
+            // Restore screen effects
+            if (screenRotation !== 0) {
+                ctx.restore();
+            }
+            
+            if (screenShake > 0) {
+                ctx.restore();
+            }
+        }
+        
+        // Draw background
+        function drawBackground() {
+            // Background based on graphics quality
+            if (gameSettings.graphicsQuality === 'high') {
+                // Detailed gradient background
+                const gradient = ctx.createLinearGradient(0, 0, 0, levelHeight);
+                gradient.addColorStop(0, '#110000');
+                gradient.addColorStop(0.3, '#220011');
+                gradient.addColorStop(0.7, '#110022');
+                gradient.addColorStop(1, '#000033');
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, 0, levelWidth, levelHeight);
+                
+                // Add stars
+                ctx.fillStyle = '#fff';
+                for (let i = 0; i < 200; i++) {
+                    const x = (i * 1234567) % levelWidth;
+                    const y = (i * 7654321) % levelHeight;
+                    const size = (i % 3) + 1;
+                    ctx.fillRect(x, y, size, size);
+                }
+                
+                // Add distant mountains
+                ctx.fillStyle = '#330000';
+                for (let i = 0; i < 5; i++) {
+                    const x = (i * 600) % levelWidth;
+                    const height = 100 + Math.sin(i) * 50;
+                    ctx.beginPath();
+                    ctx.moveTo(x, levelHeight);
+                    ctx.lineTo(x + 300, levelHeight);
+                    ctx.lineTo(x + 150, levelHeight - height);
+                    ctx.closePath();
+                    ctx.fill();
+                }
+            } else if (gameSettings.graphicsQuality === 'medium') {
+                // Simple gradient background
+                const gradient = ctx.createLinearGradient(0, 0, 0, levelHeight);
+                gradient.addColorStop(0, '#220000');
+                gradient.addColorStop(1, '#000022');
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, 0, levelWidth, levelHeight);
+                
+                // Add some stars
+                ctx.fillStyle = '#fff';
+                for (let i = 0; i < 100; i++) {
+                    const x = (i * 123) % levelWidth;
+                    const y = (i * 321) % levelHeight;
+                    ctx.fillRect(x, y, 1, 1);
+                }
+            } else {
+                // Low quality - simple color
+                ctx.fillStyle = '#000';
+                ctx.fillRect(0, 0, levelWidth, levelHeight);
+            }
+        }
+        
+        // Play sound effects (placeholder)
+        function playSound(type) {
+            if (!gameSettings.soundEffects || gameSettings.masterVolume === 0) return;
+            
+            // In a full implementation, you would play actual audio files
+            console.log(`Playing sound: ${type} at volume ${gameSettings.masterVolume}%`);
+        }
+        
+        // Load leaderboard from localStorage
+        function loadLeaderboard() {
+            const stored = localStorage.getItem('impossiblePlatformerLeaderboard');
+            if (stored) {
+                leaderboard = JSON.parse(stored);
+            } else {
+                leaderboard = [
+                    { name: "CHAOS", score: 999 },
+                    { name: "RAGE", score: 750 },
+                    { name: "PAIN", score: 500 },
+                    { name: "FEAR", score: 250 },
+                    { name: "PLAYER", score: 99 }
+                ];
+            }
+            updateLeaderboardDisplay();
+        }
+        
+        // Update leaderboard
+        function updateLeaderboard() {
+            // Calculate score based on levels completed and deaths
+            const score = completedLevels.length * 100 - playerDeaths;
+            
+            // Check if this score qualifies for the leaderboard
+            if (score > leaderboard[leaderboard.length - 1].score) {
+                // In a real game, we would prompt for a name
+                const name = "PLAYER";
+                leaderboard.push({ name, score });
+                leaderboard.sort((a, b) => b.score - a.score);
+                leaderboard = leaderboard.slice(0, 5); // Keep top 5
+                localStorage.setItem('impossiblePlatformerLeaderboard', JSON.stringify(leaderboard));
+                updateLeaderboardDisplay();
+            }
+        }
+        
+        // Update leaderboard display
+        function updateLeaderboardDisplay() {
+            const scoresList = document.getElementById('scoresList');
+            scoresList.innerHTML = '';
+            
+            for (let i = 0; i < leaderboard.length; i++) {
+                const entry = leaderboard[i];
+                const div = document.createElement('div');
+                div.textContent = `${i + 1}. ${entry.name}: ${entry.score}`;
+                scoresList.appendChild(div);
+            }
+        }
+        
+        // Initialize the game when the page loads
+        window.onload = init;
+    </script>
+</body>
+</html>
